@@ -1,0 +1,11 @@
+{
+  // Cloudflare Workers 정적 자산(Static Assets) 배포 설정.
+  // 배포되는 건 ./public 폴더뿐이다. 원본 기록(Diet/, recording_weight/)은 절대 업로드되지 않는다.
+  // ./public 은 ./deploy.sh 가 index.html 을 복사해서 생성한다. 직접 수정하지 말 것.
+  "name": "jinwoong-diet",
+  "compatibility_date": "2026-09-22",
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "single-page-application"
+  }
+}

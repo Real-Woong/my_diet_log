@@ -1,0 +1,1489 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090b0a">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="몸무게, 허리둘레와 식단을 한눈에 확인하는 진웅의 다이어트 기록입니다.">
+  <title>진웅의 다이어트 기록</title>
+  <style>
+    :root {
+      --bg: #090b0a;
+      --surface: #111512;
+      --surface-2: #171c18;
+      --line: #293029;
+      --text: #f3f7f1;
+      --muted: #8f9b91;
+      --lime: #c7ff3d;
+      --lime-soft: rgba(199,255,61,.12);
+      --radius-lg: 28px;
+      --radius-md: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    :focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; }
+    html { color-scheme: dark; background: var(--bg); }
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--text);
+      background: radial-gradient(circle at 85% -10%, rgba(199,255,61,.08), transparent 30%), var(--bg);
+      font-family: Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+      letter-spacing: -.02em;
+    }
+
+    .shell { max-width: 1504px; margin: 0 auto; padding: 34px 48px 48px; }
+    .skip-link { position: fixed; top: 12px; left: 12px; z-index: 100; padding: 10px 14px; border-radius: 10px; color: #0b0d0b; background: var(--lime); font-weight: 800; transform: translateY(-180%); }
+    .skip-link:focus { transform: translateY(0); }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      min-height: 80px; padding-bottom: 26px; border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 18px; }
+    .mark {
+      display: grid; place-items: center; width: 48px; height: 48px;
+      border-radius: 14px; background: var(--lime); color: #0b0d0b;
+      font-weight: 950; font-size: 19px; transform: rotate(-3deg);
+    }
+    h1 { margin: 0; font-size: clamp(22px, 2vw, 32px); font-weight: 850; letter-spacing: -.045em; }
+    .sub { margin-top: 5px; color: var(--muted); font-size: 14px; }
+    .date {
+      display: flex; align-items: center; gap: 12px; color: #c8d0c9;
+      font-size: 14px; font-weight: 700; letter-spacing: .04em;
+    }
+    .date::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 18px var(--lime); }
+
+    main { padding-top: 34px; }
+    .eyebrow { color: var(--lime); font-size: 12px; font-weight: 850; letter-spacing: .16em; text-transform: uppercase; }
+    .hero { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, .75fr); gap: 22px; margin-bottom: 22px; }
+    .weight-card {
+      position: relative; overflow: hidden; min-height: 354px; padding: 34px 38px;
+      border: 1px solid #343d34; border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, #151a16 0%, #0e110f 70%);
+    }
+    .weight-card::after {
+      content: attr(data-watermark); position: absolute; right: -24px; bottom: -64px;
+      color: rgba(255,255,255,.025); font-size: 260px; line-height: 1; font-weight: 950; letter-spacing: -.11em;
+    }
+    .status { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1; }
+    .badge { padding: 8px 12px; border: 1px solid rgba(199,255,61,.3); border-radius: 999px; color: var(--lime); background: var(--lime-soft); font-size: 12px; font-weight: 800; }
+    .badge.stale { border-color: rgba(255,190,92,.35); color: #ffbe5c; background: rgba(255,190,92,.1); }
+    .weight-label { margin-top: 52px; color: #aab4ac; font-size: 16px; font-weight: 650; position: relative; z-index: 1; }
+    .weight { display: flex; align-items: baseline; margin-top: 4px; position: relative; z-index: 1; }
+    .weight strong { font-size: clamp(84px, 9vw, 142px); line-height: .92; letter-spacing: -.085em; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .weight span { margin-left: 17px; color: var(--lime); font-size: 28px; font-weight: 850; }
+    .baseline { margin-top: 22px; color: var(--muted); font-size: 14px; position: relative; z-index: 1; }
+    .baseline b { color: #d8ded9; }
+
+    .metrics { display: grid; grid-template-rows: repeat(3, 1fr); gap: 14px; }
+    .metric { display: flex; flex-direction: column; justify-content: space-between; padding: 27px 29px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+    .metric-top { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 14px; font-weight: 650; }
+    .metric-icon { color: var(--lime); font-size: 18px; }
+    .metric-value { font-size: 42px; line-height: 1; font-weight: 900; letter-spacing: -.065em; font-variant-numeric: tabular-nums; }
+    .metric-value small { margin-left: 8px; color: var(--muted); font-size: 16px; font-weight: 700; letter-spacing: -.02em; }
+    .metric-detail { margin-top: 10px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+    .panel { padding: 30px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
+    .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 25px; }
+    h2 { margin: 4px 0 0; font-size: 23px; font-weight: 850; letter-spacing: -.045em; }
+    .panel-note { color: var(--muted); font-size: 13px; text-align: right; }
+    .chart-panel { margin-bottom: 22px; }
+    .chart-wrap { position: relative; min-height: 330px; padding: 18px 8px 0; border: 1px solid #252c26; border-radius: 18px; background: #0e120f; }
+    #weightChart { display: block; width: 100%; height: 300px; }
+    .chart-summary { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 13px; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 12px rgba(199,255,61,.6); }
+    .calendar-panel { margin-bottom: 22px; }
+    .calendar-toolbar { display: flex; align-items: center; gap: 10px; }
+    .calendar-title { min-width: 126px; text-align: center; font-size: 18px; font-weight: 850; font-variant-numeric: tabular-nums; }
+    .calendar-nav, .modal-close {
+      display: grid; place-items: center; width: 38px; height: 38px; padding: 0;
+      border: 1px solid #354036; border-radius: 12px; color: var(--text); background: var(--surface-2);
+      font: inherit; font-size: 20px; cursor: pointer;
+    }
+    .calendar-today { min-height: 38px; padding: 0 13px; border: 1px solid #354036; border-radius: 12px; color: #c8d0c9; background: var(--surface-2); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+    .calendar-today:hover, .calendar-today:focus-visible { border-color: var(--lime); color: var(--lime); outline: none; }
+    .calendar-nav:hover, .calendar-nav:focus-visible, .modal-close:hover, .modal-close:focus-visible { border-color: var(--lime); color: var(--lime); outline: none; }
+    .calorie-guide { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: -7px 0 22px; color: var(--muted); font-size: 12px; }
+    .guide-item { display: inline-flex; align-items: center; gap: 6px; }
+    .guide-item b { color: #d5dbd6; font-weight: 750; }
+    .calendar-weekdays, .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+    .calendar-weekdays { border: 1px solid #252c26; border-bottom: 0; border-radius: 16px 16px 0 0; overflow: hidden; background: #0e120f; }
+    .weekday { padding: 13px 8px; color: var(--muted); text-align: center; font-size: 12px; font-weight: 750; }
+    .weekday:first-child { color: #e88787; }
+    .weekday:last-child { color: #84a9e8; }
+    .calendar-grid { border-top: 1px solid #252c26; border-left: 1px solid #252c26; }
+    .calendar-cell { position: relative; min-height: 112px; border: 0; border-right: 1px solid #252c26; border-bottom: 1px solid #252c26; color: var(--text); background: #111512; font: inherit; text-align: left; }
+    .calendar-cell:nth-last-child(-n+7):first-child, .calendar-grid { border-radius: 0 0 16px 16px; overflow: hidden; }
+    button.calendar-cell { padding: 12px; cursor: pointer; transition: background .18s ease, box-shadow .18s ease; }
+    button.calendar-cell:hover, button.calendar-cell:focus-visible { z-index: 1; background: #192019; box-shadow: inset 0 0 0 1px var(--lime); outline: none; }
+    .calendar-cell.blank { background: #0c0f0d; }
+    .calendar-cell.latest-record { background: linear-gradient(145deg, rgba(199,255,61,.1), #111512 55%); }
+    .calendar-cell.current-day::after { content: "오늘"; position: absolute; top: 10px; right: 10px; color: var(--lime); font-size: 9px; font-weight: 850; }
+    .day-number { display: block; color: #aab4ac; font-size: 13px; font-weight: 750; }
+    .calendar-cell:nth-child(7n+1) .day-number { color: #e88787; }
+    .calendar-cell:nth-child(7n) .day-number { color: #84a9e8; }
+    .day-face { display: block; margin-top: 8px; text-align: center; font-size: 30px; line-height: 1; }
+    .day-kcal { display: block; margin-top: 7px; color: var(--muted); text-align: center; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .day-empty { display: block; margin-top: 24px; color: #475048; text-align: center; font-size: 11px; }
+    .content-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(340px, .75fr); gap: 22px; }
+    .meal-list { display: grid; gap: 10px; }
+    .meal { display: grid; grid-template-columns: 88px minmax(0, 1fr) auto; align-items: center; gap: 20px; min-height: 79px; padding: 0 20px; border: 1px solid #252c26; border-radius: 15px; background: var(--surface-2); }
+    .meal-type { color: #d5dbd6; font-weight: 780; }
+    .meal-state { color: #778179; font-size: 14px; line-height: 1.5; }
+    .meal-calories { color: var(--lime); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .history-list { display: grid; gap: 10px; }
+    .history-item { display: grid; grid-template-columns: 1fr auto; gap: 14px; padding: 18px 20px; border: 1px solid #252c26; border-radius: 15px; background: var(--surface-2); }
+    .history-date { color: #d5dbd6; font-weight: 750; }
+    .history-day { margin-top: 5px; color: var(--muted); font-size: 12px; }
+    .history-weight { align-self: center; color: var(--lime); font-size: 22px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .history-measurements { align-self: center; text-align: right; }
+    .history-waist { margin-top: 5px; color: var(--muted); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .empty { display: grid; place-items: center; min-height: 150px; padding: 26px; text-align: center; border: 1px dashed #343c35; border-radius: 18px; background: #0e120f; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .modal { position: fixed; inset: 0; z-index: 20; display: none; place-items: center; padding: 20px; background: rgba(0,0,0,.72); backdrop-filter: blur(8px); }
+    .modal.open { display: grid; }
+    .modal-card { width: min(560px, 100%); max-height: min(720px, calc(100vh - 40px)); overflow: auto; border: 1px solid #3b463c; border-radius: 26px; background: #111512; box-shadow: 0 26px 80px rgba(0,0,0,.55); }
+    .modal-head { position: sticky; top: 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 26px 28px 20px; border-bottom: 1px solid var(--line); background: rgba(17,21,18,.96); backdrop-filter: blur(8px); }
+    .modal-head h3 { margin: 5px 0 0; font-size: 24px; letter-spacing: -.04em; }
+    .modal-body { padding: 24px 28px 30px; }
+    .modal-summary { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 18px; padding: 18px 20px; border: 1px solid #303930; border-radius: 16px; background: var(--surface-2); }
+    .modal-face { font-size: 38px; line-height: 1; }
+    .modal-kcal { text-align: right; }
+    .modal-kcal strong { display: block; color: var(--lime); font-size: 26px; font-variant-numeric: tabular-nums; }
+    .modal-kcal span { color: var(--muted); font-size: 12px; }
+    .modal-meals { display: grid; gap: 10px; }
+    .modal-meal { display: grid; grid-template-columns: 72px 1fr auto; gap: 12px; padding: 15px 16px; border-bottom: 1px solid #252c26; }
+    .modal-meal:last-child { border-bottom: 0; }
+    .modal-meal-name { color: #d5dbd6; font-weight: 780; }
+    .modal-meal-food { color: var(--muted); line-height: 1.55; }
+    .modal-meal-kcal { color: #c8d0c9; font-size: 13px; font-variant-numeric: tabular-nums; }
+    body.modal-open { overflow: hidden; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    footer { display: flex; justify-content: space-between; margin-top: 22px; color: #525b54; font-size: 12px; }
+
+    @media (max-width: 900px) {
+      .shell { padding: 22px 20px 36px; }
+      header { align-items: flex-start; }
+      .sub { display: none; }
+      .hero, .content-grid { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(3, 1fr); grid-template-rows: auto; }
+      .metric { min-height: 150px; }
+    }
+    @media (max-width: 540px) {
+      .mark { width: 40px; height: 40px; }
+      h1 { font-size: 20px; }
+      .date { font-size: 11px; }
+      .weight-card { min-height: 306px; padding: 26px 24px; }
+      .weight-label { margin-top: 47px; }
+      .metrics { grid-template-columns: 1fr; }
+      .panel { padding: 23px 18px; }
+      .panel-head { display: block; }
+      .panel-note { margin-top: 8px; text-align: left; }
+      .chart-wrap { min-height: 280px; margin: 0 -4px; }
+      #weightChart { height: 250px; }
+      .calendar-panel { padding-left: 12px; padding-right: 12px; }
+      .calendar-panel .panel-head { display: flex; }
+      .calendar-title { min-width: 100px; font-size: 16px; }
+      .calendar-today { display: none; }
+      .calendar-nav { width: 34px; height: 34px; }
+      .calorie-guide { gap: 7px 12px; }
+      .weekday { padding: 10px 2px; font-size: 10px; }
+      .calendar-cell { min-height: 76px; }
+      button.calendar-cell { padding: 7px 4px; }
+      .day-face { margin-top: 5px; font-size: 22px; }
+      .day-kcal { margin-top: 5px; font-size: 9px; }
+      .day-empty { display: none; }
+      .meal { grid-template-columns: 62px minmax(0, 1fr); gap: 7px 10px; padding: 12px 14px; }
+      .meal-calories { grid-column: 2; }
+      .modal-head, .modal-body { padding-left: 20px; padding-right: 20px; }
+      .modal-meal { grid-template-columns: 58px 1fr; }
+      .modal-meal-kcal { grid-column: 2; }
+      footer { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">본문으로 바로가기</a>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <div class="mark">JW</div>
+        <div><h1>진웅의 다이어트 기록</h1><div class="sub">매일의 작은 기록이 만드는 큰 변화</div></div>
+      </div>
+      <time class="date" id="currentDate"></time>
+    </header>
+
+    <main id="mainContent">
+      <section class="hero" aria-label="현재 다이어트 요약">
+        <article class="weight-card" id="weightCard" data-watermark="120">
+          <div class="status"><div class="eyebrow">Latest check</div><div class="badge" id="dayBadge">DAY 01</div></div>
+          <div class="weight-label">현재 몸무게</div>
+          <div class="weight"><strong id="currentWeight">120.0</strong><span>kg</span></div>
+          <div class="baseline">시작 몸무게 <b id="startWeight">120.0 kg</b> · <span id="latestMessage">오늘부터 기록을 시작해요.</span></div>
+        </article>
+
+        <div class="metrics">
+          <article class="metric">
+            <div class="metric-top"><span>총 변화</span><span class="metric-icon">↘</span></div>
+            <div class="metric-value"><span id="totalChange">0.0</span><small>kg</small></div>
+            <div class="metric-detail" id="changeDetail"></div>
+          </article>
+          <article class="metric">
+            <div class="metric-top"><span>최근 허리둘레</span><span class="metric-icon">◎</span></div>
+            <div class="metric-value"><span id="currentWaist">—</span><small id="waistUnit">cm</small></div>
+            <div class="metric-detail" id="waistDetail"></div>
+          </article>
+          <article class="metric">
+            <div class="metric-top"><span>누적 기록</span><span class="metric-icon">●</span></div>
+            <div class="metric-value"><span id="recordCount">1</span><small>day</small></div>
+            <div class="metric-detail" id="recordDetail"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel chart-panel">
+        <div class="panel-head">
+          <div><div class="eyebrow">Weight progress</div><h2>날짜별 몸무게 변화</h2></div>
+          <div class="chart-summary"><span class="legend-dot"></span><span>몸무게(kg)</span></div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="weightChart" role="img" aria-label="날짜별 몸무게 변화 선 그래프"></canvas>
+        </div>
+        <table class="sr-only" id="accessibleWeightTable"><caption>날짜별 몸무게와 허리둘레 기록</caption><thead><tr><th>날짜</th><th>몸무게</th><th>허리둘레</th></tr></thead><tbody></tbody></table>
+      </section>
+
+      <section class="panel calendar-panel" aria-labelledby="calendarHeading">
+        <div class="panel-head">
+          <div><div class="eyebrow">Meal calendar</div><h2 id="calendarHeading">식단 달력</h2></div>
+          <div class="calendar-toolbar">
+            <button class="calendar-today" id="latestMonth" type="button">최근 기록</button>
+            <button class="calendar-nav" id="prevMonth" type="button" aria-label="이전 달">‹</button>
+            <div class="calendar-title" id="calendarTitle" aria-live="polite"></div>
+            <button class="calendar-nav" id="nextMonth" type="button" aria-label="다음 달">›</button>
+          </div>
+        </div>
+        <div class="calorie-guide" aria-label="칼로리 표정 기준">
+          <span class="guide-item">😄 <b>저칼로리</b> 1,600kcal 미만</span>
+          <span class="guide-item">🙂 <b>보통</b> 1,600~2,200kcal</span>
+          <span class="guide-item">😠 <b>고칼로리</b> 2,200kcal 초과</span>
+          <span class="guide-item">기록된 식단의 일반적인 1인분 기준 추정치</span>
+        </div>
+        <div class="calendar-weekdays" aria-hidden="true">
+          <div class="weekday">일</div><div class="weekday">월</div><div class="weekday">화</div><div class="weekday">수</div><div class="weekday">목</div><div class="weekday">금</div><div class="weekday">토</div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel">
+          <div class="panel-head">
+            <div><div class="eyebrow">Daily meals</div><h2>최근 식단</h2></div>
+            <div class="panel-note" id="mealDate"></div>
+          </div>
+          <div class="meal-list" id="mealList"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head"><div><div class="eyebrow">History</div><h2>최근 기록</h2></div></div>
+          <div class="history-list" id="historyList"></div>
+        </article>
+      </section>
+    </main>
+
+    <footer><span>JINWOONG DIET LOG</span><span><span id="footerStart"></span> · <span id="footerUpdated"></span></span></footer>
+  </div>
+
+  <div class="modal" id="mealModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div><div class="eyebrow">Daily meals</div><h3 id="modalTitle"></h3></div>
+        <button class="modal-close" id="modalClose" type="button" aria-label="식단 상세 닫기">×</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    // 새 기록은 아래 배열의 마지막에 같은 형식으로 추가하면 모든 화면과 차트가 자동 갱신됩니다.
+    const records = [
+      {
+        date: "2026-07-13",
+        weight: 120,
+        waist: null,
+        calories: 1000,
+        meals: {
+          breakfast: { food: "씨리얼", calories: 300 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "콩국수", calories: 700 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-07-14",
+        weight: 119.75,
+        waist: 118,
+        calories: 980,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "김치찌개, 밥", calories: 600 },
+          snack: { food: "아이스크림 하나", calories: 200 }
+        }
+      },
+      {
+        date: "2026-07-15",
+        weight: 118.95,
+        waist: 118,
+        calories: 830,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "양배추가 많이 들어간 오꼬노미야키", calories: 650 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-07-16",
+        weight: 118.43,
+        waist: 117,
+        calories: null,
+        meals: {
+          breakfast: { food: "기록 대기", calories: null },
+          lunch: { food: "기록 대기", calories: null },
+          dinner: { food: "기록 대기", calories: null },
+          snack: { food: "기록 대기", calories: null }
+        }
+      },
+      {
+        date: "2026-07-17",
+        weight: 118.91,
+        waist: 118,
+        calories: 600,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "비빔국수", calories: 600 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-07-18",
+        weight: 118.81,
+        waist: 117,
+        calories: 1350,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "백짬뽕(만들어 먹음)", calories: 550 },
+          dinner: { food: "닭가슴살 또띠아", calories: 450 },
+          snack: { food: "크림빵", calories: 350 }
+        }
+      },
+      {
+        date: "2026-07-19",
+        weight: 118.61,
+        waist: 116,
+        calories: null,
+        meals: {
+          breakfast: { food: "기록 대기", calories: null },
+          lunch: { food: "기록 대기", calories: null },
+          dinner: { food: "기록 대기", calories: null },
+          snack: { food: "기록 대기", calories: null }
+        }
+      },
+      {
+        date: "2026-07-20",
+        weight: 117.93,
+        waist: 117,
+        calories: 730,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "또띠아 + 소고기", calories: 550 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-07-21",
+        weight: 117.5,
+        waist: null,
+        calories: 680,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "샌드위치", calories: 500 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-07-22",
+        weight: 116.97,
+        waist: 110,
+        calories: 830,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "김치찜", calories: 650 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-07-23",
+        weight: 117.5,
+        waist: 110,
+        calories: 780,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "햄버거", calories: 600 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-07-24",
+        weight: 117.26,
+        waist: 110,
+        calories: null,
+        meals: {
+          breakfast: { food: "기록 대기", calories: null },
+          lunch: { food: "기록 대기", calories: null },
+          dinner: { food: "기록 대기", calories: null },
+          snack: { food: "기록 대기", calories: null }
+        }
+      },
+      {
+        date: "2026-07-25",
+        weight: 117.99,
+        waist: 110,
+        calories: null,
+        meals: {
+          breakfast: { food: "기록 대기", calories: null },
+          lunch: { food: "기록 대기", calories: null },
+          dinner: { food: "기록 대기", calories: null },
+          snack: { food: "기록 대기", calories: null }
+        }
+      },
+      {
+        date: "2026-07-26",
+        weight: 117.58,
+        waist: 110,
+        calories: null,
+        meals: {
+          breakfast: { food: "기록 대기", calories: null },
+          lunch: { food: "기록 대기", calories: null },
+          dinner: { food: "기록 대기", calories: null },
+          snack: { food: "기록 대기", calories: null }
+        }
+      },
+      {
+        date: "2026-07-27",
+        weight: 118.5,
+        waist: 112,
+        calories: 880,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "소고기 + 밥", calories: 700 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-07-28",
+        weight: 117.76,
+        waist: 110,
+        calories: 880,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "짜장면", calories: 700 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-07-29",
+        weight: 118.61,
+        waist: 110,
+        calories: 680,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "고등어", calories: 500 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-07-30",
+        weight: 118,
+        waist: 110,
+        calories: 950,
+        meals: {
+          breakfast: { food: "단백질 아몬드 브리즈", calories: 150 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "보쌈", calories: 800 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-07-31",
+        weight: 117.91,
+        waist: 110,
+        calories: 1230,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "보쌈, 샐러드", calories: 800 },
+          snack: { food: "구구콘(아이스크림)", calories: 250 }
+        }
+      },
+      {
+        date: "2026-08-01",
+        weight: 117.26,
+        waist: 109,
+        calories: null,
+        meals: {
+          breakfast: { food: "기록 대기", calories: null },
+          lunch: { food: "기록 대기", calories: null },
+          dinner: { food: "기록 대기", calories: null },
+          snack: { food: "기록 대기", calories: null }
+        }
+      },
+      {
+        date: "2026-08-02",
+        weight: 117.41,
+        waist: 109,
+        calories: 800,
+        meals: {
+          breakfast: { food: "참치샌드위치", calories: 400 },
+          lunch: { food: "떡볶이 0.5인분", calories: 250 },
+          dinner: { food: "아몬드브리즈 단백질", calories: 150 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-03",
+        weight: 117.49,
+        waist: 108,
+        calories: 830,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "고등어 조림 + 밥", calories: 650 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-04",
+        weight: 117.29,
+        waist: 109,
+        calories: 930,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "오리고기", calories: 750 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-05",
+        weight: 117.11,
+        waist: 108,
+        calories: 1300,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "라면 반 개", calories: 250 },
+          dinner: { food: "오리고기", calories: 750 },
+          snack: { food: "빵", calories: 300 }
+        }
+      },
+      {
+        date: "2026-08-06",
+        weight: 118.06,
+        waist: 101,
+        calories: 830,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "미트볼, 갈릭새우", calories: 650 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-07",
+        weight: 117.6,
+        waist: 103,
+        calories: 1580,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "치킨 + 닭발", calories: 1100 },
+          snack: { food: "과자(치토스)", calories: 300 }
+        }
+      },
+      {
+        date: "2026-08-08",
+        weight: 117.88,
+        waist: 102,
+        calories: 1250,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "샌드위치", calories: 450 },
+          dinner: { food: "라멘", calories: 600 },
+          snack: { food: "아이스크림", calories: 200 }
+        }
+      },
+      {
+        date: "2026-08-09",
+        weight: 117.93,
+        waist: 101,
+        calories: 1200,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "가정식", calories: 600 },
+          dinner: { food: "비빔밥", calories: 600 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-10",
+        weight: 117.71,
+        waist: 102,
+        calories: 780,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "김치찌개, 밥", calories: 600 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-11",
+        weight: 116.59,
+        waist: 101,
+        calories: 1000,
+        meals: {
+          breakfast: { food: "아몬드 브리즈 단백질", calories: 150 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "카레 돈까스", calories: 850 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-12",
+        weight: 116.39,
+        waist: 100,
+        calories: 880,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "카레", calories: 700 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-13",
+        weight: 116.08,
+        waist: 100,
+        calories: 1230,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "열무국수 + 치킨", calories: 1050 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-14",
+        weight: 116.81,
+        waist: 101,
+        calories: 1250,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "닭가슴살 샌드위치 + 찹쌀떡", calories: 550 },
+          dinner: { food: "장어", calories: 700 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-15",
+        weight: 115.93,
+        waist: 100,
+        calories: 1350,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "샌드위치", calories: 450 },
+          dinner: { food: "굽네치킨", calories: 900 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-16",
+        weight: 115.48,
+        waist: 100,
+        calories: 500,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "라면", calories: 500 },
+          dinner: { food: "공복", calories: 0 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-17",
+        weight: 116.27,
+        waist: 101,
+        calories: 1700,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "햄버거", calories: 700 },
+          dinner: { food: "파스타", calories: 700 },
+          snack: { food: "도넛", calories: 300 }
+        }
+      },
+      {
+        date: "2026-08-18",
+        weight: 117.8,
+        waist: 102,
+        calories: 450,
+        meals: {
+          breakfast: { food: "아몬드브리즈 + 도넛", calories: 450 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "공복", calories: 0 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-19",
+        weight: 116.22,
+        waist: 100,
+        calories: 580,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "핫도그", calories: 400 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-20",
+        weight: 117.66,
+        waist: 101.5,
+        calories: 980,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "감자탕", calories: 800 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-21",
+        weight: 117.8,
+        waist: 102,
+        calories: 680,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "라면", calories: 500 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-22",
+        weight: 116.88,
+        waist: 101,
+        calories: 1650,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "서브웨이 30cm", calories: 750 },
+          dinner: { food: "냉면 + 소고기", calories: 900 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-23",
+        weight: 116.54,
+        waist: 100,
+        calories: 2000,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "샌드위치 + 계란 4개", calories: 750 },
+          dinner: { food: "삼겹살", calories: 900 },
+          snack: { food: "크림빵", calories: 350 }
+        }
+      },
+      {
+        date: "2026-08-24",
+        weight: 116.66,
+        waist: 102,
+        calories: 1750,
+        meals: {
+          breakfast: { food: "쌀국수", calories: 500 },
+          lunch: { food: "싸이버거 단품", calories: 550 },
+          dinner: { food: "제사음식", calories: 700 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-25",
+        weight: 117.09,
+        waist: 102,
+        calories: 1600,
+        meals: {
+          breakfast: { food: "컵라면", calories: 400 },
+          lunch: { food: "비빔밥", calories: 600 },
+          dinner: { food: "집밥", calories: 600 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-26",
+        weight: 119.49,
+        waist: 103,
+        calories: 780,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "떡볶이", calories: 600 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-27",
+        weight: 117.98,
+        waist: 101,
+        calories: 980,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "제육볶음", calories: 800 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-28",
+        weight: 116.88,
+        waist: 101,
+        calories: 880,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "닭백숙", calories: 700 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-29",
+        weight: 116.88,
+        waist: 101,
+        calories: 1400,
+        meals: {
+          breakfast: { food: "맥모닝", calories: 500 },
+          lunch: { food: "안 먹음", calories: 0 },
+          dinner: { food: "치킨", calories: 900 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-08-30",
+        weight: 119.33,
+        waist: 102,
+        calories: 760,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "짜장면", calories: 700 },
+          snack: { food: "복숭아", calories: 60 }
+        }
+      },
+      {
+        date: "2026-08-31",
+        weight: 119.33,
+        waist: 101,
+        calories: 780,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "순대국", calories: 600 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-01",
+        weight: 117.89,
+        waist: 100,
+        calories: 650,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "샌드위치", calories: 450 },
+          dinner: { food: "삼각김밥", calories: 200 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-02",
+        weight: 116.87,
+        waist: 100,
+        calories: 780,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "순대국", calories: 600 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-03",
+        weight: 117.09,
+        waist: 100,
+        calories: 980,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "장어덮밥", calories: 800 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-04",
+        weight: 117.36,
+        waist: 100,
+        calories: 1080,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "돈까스", calories: 900 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-05",
+        weight: 117.64,
+        waist: 102,
+        calories: 950,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "빵", calories: 350 },
+          dinner: { food: "순대국", calories: 600 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-06",
+        weight: 118.21,
+        waist: 101,
+        calories: 1600,
+        meals: {
+          breakfast: { food: "씨리얼", calories: 300 },
+          lunch: { food: "햄버거", calories: 700 },
+          dinner: { food: "냉면", calories: 600 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-07",
+        weight: 118.46,
+        waist: 102,
+        calories: 1580,
+        meals: {
+          breakfast: { food: "두유", calories: 130 },
+          lunch: { food: "샌드위치, 유부초밥", calories: 650 },
+          dinner: { food: "제육볶음", calories: 800 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-08",
+        weight: 118.69,
+        waist: 102,
+        calories: 300,
+        meals: {
+          breakfast: { food: "시리얼", calories: 300 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "공복", calories: 0 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-09",
+        weight: 117.31,
+        waist: 100,
+        calories: null,
+        meals: {
+          breakfast: { food: "기록 대기", calories: null },
+          lunch: { food: "기록 대기", calories: null },
+          dinner: { food: "기록 대기", calories: null },
+          snack: { food: "기록 대기", calories: null }
+        }
+      },
+      {
+        date: "2026-09-10",
+        weight: 116.81,
+        waist: 100,
+        calories: null,
+        meals: {
+          breakfast: { food: "기록 대기", calories: null },
+          lunch: { food: "기록 대기", calories: null },
+          dinner: { food: "기록 대기", calories: null },
+          snack: { food: "기록 대기", calories: null }
+        }
+      },
+      {
+        date: "2026-09-11",
+        weight: 115.31,
+        waist: 99,
+        calories: null,
+        meals: {
+          breakfast: { food: "기록 대기", calories: null },
+          lunch: { food: "기록 대기", calories: null },
+          dinner: { food: "기록 대기", calories: null },
+          snack: { food: "기록 대기", calories: null }
+        }
+      },
+      {
+        date: "2026-09-12",
+        weight: 113.98,
+        waist: 98,
+        calories: 1300,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "햄버거", calories: 700 },
+          dinner: { food: "회", calories: 600 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-13",
+        weight: 114.66,
+        waist: 100,
+        calories: 1200,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "뼈해장국", calories: 700 },
+          dinner: { food: "라면", calories: 500 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-14",
+        weight: 114.96,
+        waist: 99,
+        calories: 780,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "순대국", calories: 600 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-15",
+        weight: 115.05,
+        waist: 99,
+        calories: 360,
+        meals: {
+          breakfast: { food: "공복", calories: 0 },
+          lunch: { food: "단백질 쉐이크", calories: 180 },
+          dinner: { food: "단백질 쉐이크", calories: 180 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-16",
+        weight: 114.22,
+        waist: 99,
+        calories: 1080,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "등갈비", calories: 900 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-17",
+        weight: 113.63,
+        waist: 100,
+        calories: 880,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "스파게티", calories: 700 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-18",
+        weight: 113.2,
+        waist: 100,
+        calories: 380,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "삼각김밥", calories: 200 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-19",
+        weight: 112.56,
+        waist: 98,
+        calories: 1700,
+        meals: {
+          breakfast: { food: "맥모닝", calories: 500 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "모둠 전 + 맥주 + 막걸리", calories: 1200 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-20",
+        weight: 112.2,
+        waist: 98,
+        calories: 1100,
+        meals: {
+          breakfast: { food: "맥모닝", calories: 500 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "김치찌개", calories: 600 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-21",
+        weight: 113.45,
+        waist: 100,
+        calories: 880,
+        meals: {
+          breakfast: { food: "단백질 쉐이크", calories: 180 },
+          lunch: { food: "공복", calories: 0 },
+          dinner: { food: "닭구이", calories: 700 },
+          snack: { food: "안 먹음", calories: 0 }
+        }
+      },
+      {
+        date: "2026-09-22",
+        weight: 114.07,
+        waist: 99,
+        calories: null,
+        meals: {
+          breakfast: { food: "기록 대기", calories: null },
+          lunch: { food: "기록 대기", calories: null },
+          dinner: { food: "기록 대기", calories: null },
+          snack: { food: "기록 대기", calories: null }
+        }
+      }
+    ];
+
+    records.sort((a, b) => a.date.localeCompare(b.date));
+    const mealLabels = { breakfast: "아침", lunch: "점심", dinner: "저녁", snack: "간식" };
+    const fmtDate = (value, dots = false) => {
+      const [year, month, day] = value.split("-");
+      return dots ? `${year}.${month}.${day}` : `${year}년 ${Number(month)}월 ${Number(day)}일`;
+    };
+    const parseLocalDate = value => {
+      const [year, month, day] = value.split("-").map(Number);
+      return new Date(year, month - 1, day);
+    };
+    const toDateKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const daysBetween = (from, to) => Math.round((parseLocalDate(to) - parseLocalDate(from)) / 86400000);
+    const todayKey = toDateKey(new Date());
+    const latest = records.at(-1);
+    const start = records[0];
+    const change = latest.weight - start.weight;
+    const changeRate = (change / start.weight) * 100;
+    const elapsedDays = daysBetween(start.date, latest.date) + 1;
+    const daysSinceLatest = Math.max(0, daysBetween(latest.date, todayKey));
+    const latestWaistRecord = records.findLast(record => Number.isFinite(record.waist));
+    const firstWaistRecord = records.find(record => Number.isFinite(record.waist));
+    const waistChange = latestWaistRecord && firstWaistRecord ? latestWaistRecord.waist - firstWaistRecord.waist : null;
+    const hasMealData = record => Object.values(record?.meals || {}).some(meal => {
+      const food = typeof meal === "string" ? meal : meal?.food;
+      return food && food !== "기록 대기";
+    });
+    const latestMealRecord = records.findLast(hasMealData);
+
+    const currentDate = document.getElementById("currentDate");
+    currentDate.dateTime = latest.date;
+    currentDate.textContent = `최근 기록 · ${fmtDate(latest.date, true)}`;
+    document.getElementById("currentWeight").textContent = latest.weight.toFixed(1);
+    document.getElementById("startWeight").textContent = `${start.weight.toFixed(1)} kg`;
+    document.getElementById("totalChange").textContent = `${change > 0 ? "+" : ""}${change.toFixed(1)}`;
+    document.getElementById("currentWaist").textContent = latestWaistRecord ? latestWaistRecord.waist.toFixed(1) : "미측정";
+    document.getElementById("waistUnit").textContent = latestWaistRecord ? "cm" : "";
+    document.getElementById("recordCount").textContent = records.length;
+    const dayBadge = document.getElementById("dayBadge");
+    dayBadge.textContent = `DAY ${String(elapsedDays).padStart(2, "0")}`;
+    if (daysSinceLatest >= 7) {
+      dayBadge.classList.add("stale");
+      dayBadge.title = `마지막 기록 후 ${daysSinceLatest}일이 지났습니다`;
+    }
+    document.getElementById("weightCard").dataset.watermark = Math.round(latest.weight);
+    document.getElementById("latestMessage").textContent = daysSinceLatest === 0 ? "오늘 기록" : `${fmtDate(latest.date)} 기록 · ${daysSinceLatest}일 전`;
+    document.getElementById("changeDetail").textContent = `시작 대비 ${changeRate > 0 ? "+" : ""}${changeRate.toFixed(1)}%`;
+    document.getElementById("waistDetail").textContent = Number.isFinite(waistChange) ? `첫 측정 대비 ${waistChange > 0 ? "+" : ""}${waistChange.toFixed(1)} cm` : "비교할 측정값 없음";
+    document.getElementById("recordDetail").textContent = `${elapsedDays}일 동안 ${records.length}회 기록`;
+    document.getElementById("footerStart").textContent = `START · ${fmtDate(start.date, true)} · ${start.weight.toFixed(1)} KG`;
+    document.getElementById("footerUpdated").textContent = `UPDATED · ${fmtDate(latest.date, true)}`;
+    document.getElementById("mealDate").textContent = latestMealRecord ? `${fmtDate(latestMealRecord.date)} 기준` : "식단 기록 없음";
+
+    const mealList = document.getElementById("mealList");
+    Object.entries(mealLabels).forEach(([key, label]) => {
+      const row = document.createElement("div");
+      row.className = "meal";
+      row.innerHTML = `<span class="meal-type">${label}</span><span class="meal-state"></span><span class="meal-calories"></span>`;
+      const meal = latestMealRecord?.meals[key];
+      row.querySelector(".meal-state").textContent = typeof meal === "string" ? meal : (meal?.food || "기록 대기");
+      row.querySelector(".meal-calories").textContent = typeof meal === "object" && Number.isFinite(meal?.calories) ? `약 ${meal.calories.toLocaleString("ko-KR")} kcal` : "";
+      mealList.appendChild(row);
+    });
+
+    const historyList = document.getElementById("historyList");
+    records.slice(-5).reverse().forEach(record => {
+      const item = document.createElement("div");
+      item.className = "history-item";
+      const recordDay = daysBetween(start.date, record.date) + 1;
+      item.innerHTML = `<div><div class="history-date"></div><div class="history-day">DAY ${String(recordDay).padStart(2, "0")}</div></div><div class="history-measurements"><div class="history-weight"></div><div class="history-waist"></div></div>`;
+      item.querySelector(".history-date").textContent = fmtDate(record.date);
+      item.querySelector(".history-weight").textContent = `${record.weight.toFixed(1)} kg`;
+      item.querySelector(".history-waist").textContent = Number.isFinite(record.waist) ? `허리 ${record.waist.toFixed(1)} cm` : "허리 미측정";
+      historyList.appendChild(item);
+    });
+
+    const RESTING_ENERGY = 2000;
+    const LOW_CALORIE_MAX = 1600;
+    const HIGH_CALORIE_MIN = 2200;
+    const calorieStatus = calories => {
+      if (!Number.isFinite(calories)) return { face: "", label: "칼로리 미기록", className: "none" };
+      if (calories < LOW_CALORIE_MAX) return { face: "😄", label: "저칼로리", className: "low" };
+      if (calories > HIGH_CALORIE_MIN) return { face: "😠", label: "고칼로리", className: "high" };
+      return { face: "🙂", label: "보통", className: "mid" };
+    };
+    const recordByDate = new Map(records.map(record => [record.date, record]));
+    const initialMonth = latest.date.split("-").map(Number);
+    let calendarYear = initialMonth[0];
+    let calendarMonth = initialMonth[1] - 1;
+    let lastFocusedCalendarButton = null;
+
+    const modal = document.getElementById("mealModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalBody = document.getElementById("modalBody");
+    const modalClose = document.getElementById("modalClose");
+
+    function openMealModal(dateKey, trigger) {
+      const record = recordByDate.get(dateKey);
+      const mealRecorded = hasMealData(record);
+      const status = calorieStatus(record?.calories);
+      lastFocusedCalendarButton = trigger;
+      modalTitle.textContent = fmtDate(dateKey);
+      modalBody.replaceChildren();
+
+      const summary = document.createElement("div");
+      summary.className = "modal-summary";
+      const face = document.createElement("div");
+      face.className = "modal-face";
+      face.textContent = status.face || "—";
+      const kcal = document.createElement("div");
+      kcal.className = "modal-kcal";
+      const kcalStrong = document.createElement("strong");
+      kcalStrong.textContent = Number.isFinite(record?.calories) ? `약 ${record.calories.toLocaleString("ko-KR")} kcal` : "기록 전";
+      const kcalNote = document.createElement("span");
+      kcalNote.textContent = Number.isFinite(record?.calories) ? `${status.label} · 휴식에너지 ${RESTING_ENERGY.toLocaleString("ko-KR")}kcal 기준` : "식단을 정리하면 예상 칼로리가 표시됩니다";
+      kcal.append(kcalStrong, kcalNote);
+      summary.append(face, kcal);
+      modalBody.appendChild(summary);
+
+      if (!mealRecorded) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "이 날짜에는 아직 식단 기록이 없습니다.";
+        modalBody.appendChild(empty);
+      } else {
+        const list = document.createElement("div");
+        list.className = "modal-meals";
+        Object.entries(mealLabels).forEach(([key, label]) => {
+          const meal = record.meals?.[key];
+          const food = typeof meal === "string" ? meal : (meal?.food || "기록 대기");
+          const mealCalories = typeof meal === "object" && Number.isFinite(meal?.calories) ? `약 ${meal.calories.toLocaleString("ko-KR")} kcal` : "";
+          const row = document.createElement("div");
+          row.className = "modal-meal";
+          const nameEl = document.createElement("div"); nameEl.className = "modal-meal-name"; nameEl.textContent = label;
+          const foodEl = document.createElement("div"); foodEl.className = "modal-meal-food"; foodEl.textContent = food;
+          const caloriesEl = document.createElement("div"); caloriesEl.className = "modal-meal-kcal"; caloriesEl.textContent = mealCalories;
+          row.append(nameEl, foodEl, caloriesEl);
+          list.appendChild(row);
+        });
+        modalBody.appendChild(list);
+      }
+
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      modalClose.focus();
+    }
+
+    function closeMealModal() {
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+      lastFocusedCalendarButton?.focus();
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById("calendarGrid");
+      const title = document.getElementById("calendarTitle");
+      const firstDay = new Date(calendarYear, calendarMonth, 1).getDay();
+      const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+      const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+      title.textContent = `${calendarYear}년 ${calendarMonth + 1}월`;
+      grid.replaceChildren();
+
+      for (let cellIndex = 0; cellIndex < totalCells; cellIndex++) {
+        const day = cellIndex - firstDay + 1;
+        if (day < 1 || day > daysInMonth) {
+          const blank = document.createElement("div");
+          blank.className = "calendar-cell blank";
+          blank.setAttribute("aria-hidden", "true");
+          grid.appendChild(blank);
+          continue;
+        }
+
+        const dateKey = `${calendarYear}-${String(calendarMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const record = recordByDate.get(dateKey);
+        const mealRecorded = hasMealData(record);
+        const status = calorieStatus(record?.calories);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `calendar-cell${dateKey === latest.date ? " latest-record" : ""}${dateKey === todayKey ? " current-day" : ""}`;
+        const spokenStatus = mealRecorded ? (Number.isFinite(record.calories) ? `${record.calories}킬로칼로리, ${status.label}` : "식단 기록 있음, 칼로리 미정") : "식단 기록 없음";
+        button.setAttribute("aria-label", `${fmtDate(dateKey)}, ${spokenStatus}`);
+
+        const number = document.createElement("span"); number.className = "day-number"; number.textContent = day;
+        button.appendChild(number);
+        if (status.face) {
+          const face = document.createElement("span"); face.className = "day-face"; face.textContent = status.face; face.setAttribute("aria-hidden", "true");
+          const kcal = document.createElement("span"); kcal.className = "day-kcal"; kcal.textContent = `약 ${record.calories.toLocaleString("ko-KR")} kcal`;
+          button.append(face, kcal);
+        } else if (mealRecorded) {
+          const pending = document.createElement("span"); pending.className = "day-empty"; pending.textContent = "정리 대기";
+          button.appendChild(pending);
+        }
+        button.addEventListener("click", () => openMealModal(dateKey, button));
+        grid.appendChild(button);
+      }
+    }
+
+    document.getElementById("prevMonth").addEventListener("click", () => {
+      calendarMonth -= 1;
+      if (calendarMonth < 0) { calendarMonth = 11; calendarYear -= 1; }
+      renderCalendar();
+    });
+    document.getElementById("nextMonth").addEventListener("click", () => {
+      calendarMonth += 1;
+      if (calendarMonth > 11) { calendarMonth = 0; calendarYear += 1; }
+      renderCalendar();
+    });
+    document.getElementById("latestMonth").addEventListener("click", () => {
+      calendarYear = initialMonth[0];
+      calendarMonth = initialMonth[1] - 1;
+      renderCalendar();
+    });
+    modalClose.addEventListener("click", closeMealModal);
+    modal.addEventListener("click", event => { if (event.target === modal) closeMealModal(); });
+    document.addEventListener("keydown", event => { if (event.key === "Escape" && modal.classList.contains("open")) closeMealModal(); });
+    renderCalendar();
+
+    const tableBody = document.querySelector("#accessibleWeightTable tbody");
+    records.forEach(record => {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td></td><td></td><td></td>`;
+      row.children[0].textContent = fmtDate(record.date);
+      row.children[1].textContent = `${record.weight.toFixed(1)}kg`;
+      row.children[2].textContent = Number.isFinite(record.waist) ? `${record.waist.toFixed(1)}cm` : "미측정";
+      tableBody.appendChild(row);
+    });
+
+    function drawChart() {
+      const canvas = document.getElementById("weightChart");
+      const rect = canvas.getBoundingClientRect();
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      const ctx = canvas.getContext("2d");
+      ctx.scale(ratio, ratio);
+
+      const width = rect.width;
+      const height = rect.height;
+      const mobile = width < 560;
+      const pad = { top: 28, right: mobile ? 18 : 34, bottom: 50, left: mobile ? 48 : 64 };
+      const plotW = width - pad.left - pad.right;
+      const plotH = height - pad.top - pad.bottom;
+      const weights = records.map(record => record.weight);
+      const rawMin = Math.min(...weights);
+      const rawMax = Math.max(...weights);
+      const spread = Math.max(rawMax - rawMin, 2);
+      const minY = Math.floor((rawMin - spread * .55) * 2) / 2;
+      const maxY = Math.ceil((rawMax + spread * .55) * 2) / 2;
+      const xAt = index => records.length === 1 ? pad.left + plotW / 2 : pad.left + (index / (records.length - 1)) * plotW;
+      const yAt = weight => pad.top + ((maxY - weight) / (maxY - minY)) * plotH;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.font = `${mobile ? 11 : 12}px Pretendard, Apple SD Gothic Neo, sans-serif`;
+      ctx.textBaseline = "middle";
+      for (let i = 0; i <= 4; i++) {
+        const value = maxY - ((maxY - minY) / 4) * i;
+        const y = pad.top + (plotH / 4) * i;
+        ctx.strokeStyle = "#242b25";
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(width - pad.right, y); ctx.stroke();
+        ctx.fillStyle = "#778179";
+        ctx.textAlign = "right";
+        ctx.fillText(value.toFixed(1), pad.left - 12, y);
+      }
+
+      const gradient = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
+      gradient.addColorStop(0, "rgba(199,255,61,.26)");
+      gradient.addColorStop(1, "rgba(199,255,61,0)");
+      ctx.beginPath();
+      records.forEach((record, index) => {
+        const x = xAt(index); const y = yAt(record.weight);
+        index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      if (records.length === 1) { ctx.lineTo(pad.left + plotW / 2, pad.top + plotH); }
+      else { ctx.lineTo(xAt(records.length - 1), pad.top + plotH); ctx.lineTo(xAt(0), pad.top + plotH); }
+      ctx.closePath(); ctx.fillStyle = gradient; ctx.fill();
+
+      ctx.beginPath();
+      records.forEach((record, index) => {
+        const x = xAt(index); const y = yAt(record.weight);
+        index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = "#c7ff3d"; ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.stroke();
+
+      const valueLabelIndexes = new Set(
+        records.length <= (mobile ? 4 : 8)
+          ? records.map((_, index) => index)
+          : [0, Math.floor((records.length - 1) / 2), records.length - 1]
+      );
+      records.forEach((record, index) => {
+        const x = xAt(index); const y = yAt(record.weight);
+        ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fillStyle = "#0e120f"; ctx.fill();
+        ctx.lineWidth = 4; ctx.strokeStyle = "#c7ff3d"; ctx.stroke();
+        if (valueLabelIndexes.has(index)) {
+          ctx.fillStyle = "#f3f7f1"; ctx.textAlign = "center"; ctx.font = `700 ${mobile ? 10 : 12}px Pretendard, sans-serif`;
+          ctx.fillText(`${record.weight.toFixed(1)}kg`, x, y - 22);
+        }
+      });
+
+      const labelIndexes = records.length <= 6 ? records.map((_, i) => i) : [0, Math.floor((records.length - 1) / 2), records.length - 1];
+      ctx.font = `${mobile ? 10 : 12}px Pretendard, Apple SD Gothic Neo, sans-serif`; ctx.fillStyle = "#8f9b91"; ctx.textAlign = "center";
+      labelIndexes.forEach(index => {
+        const [, month, day] = records[index].date.split("-");
+        ctx.fillText(`${Number(month)}/${Number(day)}`, xAt(index), height - 20);
+      });
+    }
+
+    let resizeTimer;
+    window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(drawChart, 100); });
+    drawChart();
+  </script>
+</body>
+</html>

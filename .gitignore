@@ -1,0 +1,25 @@
+# 화이트리스트 방식: 기본적으로 전부 무시하고,
+# Cloudflare 배포에 필요한 것만 아래에서 되살린다.
+# 새 파일을 커밋하려면 반드시 여기에 `!파일명` 을 추가해야 한다.
+# (주의: .gitignore 는 줄 끝 주석을 지원하지 않는다. 주석은 항상 별도 줄로.)
+
+*
+
+# --- Cloudflare 배포에 필요한 것 ---------------------------------------------
+
+!.gitignore
+
+# 배포되는 페이지 본체. 기록 데이터가 이 안에 들어 있다.
+!index.html
+
+# Workers 정적 자산 설정
+!wrangler.jsonc
+
+# 빌드(public/ 생성) + wrangler deploy
+!deploy.sh
+
+# --- 아래는 위 `*` 규칙으로 이미 제외됨 ---------------------------------------
+#   Diet/, recording_weight/   원본 메모 (내용은 index.html 에 이미 반영됨)
+#   public/                    deploy.sh 가 매번 새로 만드는 빌드 결과물
+#   CLAUDE.md, .claude/        작업 가이드·에디터 설정 (배포와 무관)
+#   .wrangler/, node_modules/, .dev.vars, .env*, .DS_Store, *.icloud
